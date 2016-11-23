@@ -1,2 +1,2 @@
 # OpenCV-journey
-OpenCV projects I do will be uploaded here
+My Computer Vision projects
