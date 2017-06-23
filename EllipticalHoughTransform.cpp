@@ -118,6 +118,8 @@ void conv(std::vector<T> const &f, std::vector<T> const &g, std::vector<T>& out)
 // -random subsampling inspired by "Randomized Hough Transform for Ellipse Detection with Result Clustering"
 // (CA Basca, M Talos, R Brad / 2005)
 //
+//TO DO:
+//To include exit parameters when the algorithm fails
 void EllipticalHoughTransform_1(cv::Mat& src, HoughParams params, cv::RotatedRect& finalEll)
 {
 	double eps = 0.0001;
