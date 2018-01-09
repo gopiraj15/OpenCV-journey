@@ -55,21 +55,21 @@ cv::RotatedRect EllipseFitByTaubin(const std::vector<cv::Point_<T>>& pts)
 
 	int length = pts.size();
 
-	cv::Mat XY = cv::Mat(pts).reshape(1);
-
 	//Calculating the centroid of the data
-	cv::Scalar mx = mean(XY.col(0));
-	cv::Scalar my = mean(XY.col(1));
+	cv::Scalar mx = mean(cv::Mat(pts).reshape(1).col(0));
+	cv::Scalar my = mean(cv::Mat(pts).reshape(1).col(1));
 
 	cv::Mat1d Z = cv::Mat::ones(length, 6, CV_64FC1);
 
-	Z.col(0) = (XY.col(0) - mx[0]).mul(XY.col(0) - mx[0]); // X^2
-	Z.col(1) = (XY.col(0) - mx[0]).mul(XY.col(1) - my[0]); // XY
-	Z.col(2) = (XY.col(1) - my[0]).mul(XY.col(1) - my[0]); // Y^2
-	Z.col(3) = XY.col(0) - mx[0]; // X
-	Z.col(4) = XY.col(1) - my[0]; // Y
+	for (int i = 0; i < pts.size(); i++)
+	{
+		Z(i, 0) = pow(pts[i].x - mx[0], 2);
+		Z(i, 1) = pow((pts[i].x - mx[0]) * (pts[i].y - my[0]), 1);
+		Z(i, 2) = pow(pts[i].y - my[0], 2);
+		Z(i, 3) = pts[i].x - mx[0];
+		Z(i, 4) = pts[i].y - my[0];
+	}
 	
-	XY.release();
 
 	cv::Mat1d M = (Z.t()*Z) / length;
 
@@ -92,7 +92,8 @@ cv::RotatedRect EllipseFitByTaubin(const std::vector<cv::Point_<T>>& pts)
 	Q(1, 2) = Q(2, 1) = 2 * M(1, 5);
 	Q(2, 2) = 4 * M(2, 5);
 
-	if (cv::determinant(Q) < 0.000000000000000001) return cv::RotatedRect();
+	if (cv::determinant(Q) < 0.000000000000000001) 
+		return cv::RotatedRect();
 
 	//Solving the generalized eigen value Problem
 	//equivalent to [V, D] = eig(P,Q) 
@@ -129,11 +130,12 @@ cv::RotatedRect EllipseFitByTaubin(const std::vector<cv::Point_<T>>& pts)
 
 	A(3) = A4; A(4) = A5; A(5) = A6;
 
-	A /= norm(A);
+	A /= A6;
 
 	cv::RotatedRect ell = conicToParametric(A);
 
-	if (ell.size.width <= 0 || ell.size.height <= 0) return cv::RotatedRect();
+	if (ell.size.width <= 0 || ell.size.height <= 0) 
+		return cv::RotatedRect();
 
 	A.release();
 
